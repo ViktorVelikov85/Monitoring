@@ -2,10 +2,10 @@
 
 public class Printer : NetworkDevice
 {
-    public int PaperLevel { get; set; } = 10; // Започваме с 10 листа
-
-    // Второ събитие, специфично за принтера
+    public int PaperLevel { get; set; } = 10;
     public event EventHandler<DeviceStatusEventArgs> OutOfPaper;
+
+    public Printer() { DeviceType = "Printer"; }
 
     public void PrintPage()
     {
@@ -16,7 +16,6 @@ public class Printer : NetworkDevice
         }
         else
         {
-            // Предизвикваме събитието, ако няма хартия
             OutOfPaper?.Invoke(this, new DeviceStatusEventArgs(Name, "Printer is out of paper!"));
         }
     }
