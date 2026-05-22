@@ -35,7 +35,9 @@ public class NetworkMonitor
     // 4. LINQ: Сортиране по IP адрес
     public List<NetworkDevice> GetDevicesSortedByIp()
     {
-        return Devices.OrderBy(d => d.IpAddress).ToList();
+        return Devices
+            .OrderBy(d => Version.Parse(d.IpAddress)) // Version се справя перфектно с IP адреси
+            .ToList();
     }
 
     // 5. LINQ: Справка за проблемни устройства за избран ден

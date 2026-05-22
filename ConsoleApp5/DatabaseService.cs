@@ -146,7 +146,10 @@ public class DatabaseService
                 }
             }
         }
-        catch (MySqlException) { }
+        catch (MySqlException ex)
+        {
+            Console.WriteLine($"[БД ГРЕШКА - LOG]: Неуспешен запис на лог: {ex.Message}");
+        }
     }
 
     // Запис в таблица Alerts през MySQL
@@ -165,7 +168,10 @@ public class DatabaseService
                 }
             }
         }
-        catch (MySqlException) { }
+        catch (MySqlException ex)
+        {
+            Console.WriteLine($"[БД ГРЕШКА - LOG]: Неуспешен запис на лог: {ex.Message}");
+        }
     }
 
     // Помощен метод за изчистване на таблицата (за целите на теста)
@@ -180,7 +186,10 @@ public class DatabaseService
                 using (MySqlCommand cmd = new MySqlCommand(query, conn)) { cmd.ExecuteNonQuery(); }
             }
         }
-        catch (MySqlException) { }
+        catch (MySqlException ex)
+        {
+            Console.WriteLine($"[БД ГРЕШКА - LOG]: Неуспешен запис на лог: {ex.Message}");
+        }
     }
 
     private int GetDeviceTypeId(string typeName)
