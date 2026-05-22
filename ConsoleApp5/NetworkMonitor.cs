@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 public class NetworkMonitor
@@ -32,11 +33,11 @@ public class NetworkMonitor
         }
     }
 
-    // 4. LINQ: Сортиране по IP адрес
+    // 4. LINQ: Сортиране по IP адрес (Правилно числово сортиране, а не текстово!)
     public List<NetworkDevice> GetDevicesSortedByIp()
     {
         return Devices
-            .OrderBy(d => Version.Parse(d.IpAddress)) // Version се справя перфектно с IP адреси
+            .OrderBy(d => Version.TryParse(d.IpAddress, out var v) ? v : new Version(0, 0, 0, 0))
             .ToList();
     }
 
@@ -44,5 +45,24 @@ public class NetworkMonitor
     public List<NetworkDevice> GetProblemDevicesByDay(DateTime day)
     {
         return Devices.Where(d => (!d.IsOnline || d.Latency > 50) && d.LastChecked.Date == day.Date).ToList();
+    }
+
+    // ФАЙЛОВЕ: Експортиране на данни в CSV формат (Изискване по задание)
+    public void ExportToCsv(string filePath)
+    {
+        try
+        {
+            List<string> lines = new List<string> { "Id,Name,IpAddress,DeviceType,IsOnline,Latency" };
+            foreach (var d in Devices)
+            {
+                lines.Add($"{d.Id},{d.Name},{d.IpAddress},{d.DeviceType},{d.IsOnline},{d.Latency}");
+            }
+            File.WriteAllLines(filePath, lines);
+            Console.WriteLine($"[ФАЙЛ]: Успешен експорт на {Devices.Count} устройства в '{filePath}'");
+        }
+        catch (IOException ex)
+        {
+            Console.WriteLine($"[ГРЕШКА ФАЙЛ - EXPORT]: Неуспешно записване на CSV: {ex.Message}");
+        }
     }
 }

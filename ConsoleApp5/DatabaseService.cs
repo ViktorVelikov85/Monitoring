@@ -1,15 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
-using MySql.Data.MySqlClient; // Използва NuGet пакета
+using MySql.Data.MySqlClient;
 
 public class DatabaseService
 {
-    // Connection string за стандартен XAMPP
     private string connectionString = "Server=localhost;Database=network_monitoring;Uid=root;Pwd=;";
 
-    // 1. CREATE: Добавяне на устройство в MySQL
     public void InsertDevice(NetworkDevice device)
     {
+        // ВАЛИДАЦИЯ (Изискване по задание за валидация на входни данни преди БД)
+        if (string.IsNullOrWhiteSpace(device.Name) || string.IsNullOrWhiteSpace(device.IpAddress))
+        {
+            throw new ArgumentException("Името на устройството и IP адресът не могат да бъдат празни!");
+        }
+
         try
         {
             using (MySqlConnection conn = new MySqlConnection(connectionString))
@@ -32,12 +36,11 @@ public class DatabaseService
         catch (MySqlException ex)
         {
             Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.WriteLine($"[БД ГРЕШКА - INSERT]: Неуспешен запис на устройство! Детайли: {ex.Message}");
+            Console.WriteLine($"[БД ГРЕШКА - INSERT]: {ex.Message}");
             Console.ResetColor();
         }
     }
 
-    // 2. READ: Извличане на всички устройства от MySQL (Нужно за LINQ заявките ни)
     public List<NetworkDevice> GetAllDevices()
     {
         List<NetworkDevice> devices = new List<NetworkDevice>();
@@ -56,7 +59,6 @@ public class DatabaseService
                         string type = reader["TypeName"].ToString();
                         NetworkDevice dev = null;
 
-                        // Полиморфизъм според релацията в базата данни
                         if (type == "Router") dev = new Router();
                         else if (type == "Switch") dev = new Switch();
                         else if (type == "Printer") dev = new Printer();
@@ -78,13 +80,12 @@ public class DatabaseService
         catch (MySqlException ex)
         {
             Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.WriteLine($"[БД ГРЕШКА - ЧЕТЕНЕ]: Срив при извличане на данни! {ex.Message}");
+            Console.WriteLine($"[БД ГРЕШКА - READ]: Срив при извличане! {ex.Message}");
             Console.ResetColor();
         }
         return devices;
     }
 
-    // 3. UPDATE: Обновяване на състоянието в MySQL
     public void UpdateDevice(NetworkDevice device)
     {
         try
@@ -108,9 +109,9 @@ public class DatabaseService
         }
     }
 
-    // 4. DELETE: Изтриване от MySQL
     public void DeleteDeviceByName(string name)
     {
+        if (string.IsNullOrEmpty(name)) return;
         try
         {
             using (MySqlConnection conn = new MySqlConnection(connectionString))
@@ -130,7 +131,6 @@ public class DatabaseService
         }
     }
 
-    // Запис в таблица DeviceLogs през MySQL
     public void InsertLog(string message)
     {
         try
@@ -148,11 +148,10 @@ public class DatabaseService
         }
         catch (MySqlException ex)
         {
-            Console.WriteLine($"[БД ГРЕШКА - LOG]: Неуспешен запис на лог: {ex.Message}");
+            Console.WriteLine($"[БД ЛОГ ГРЕШКА]: {ex.Message}");
         }
     }
 
-    // Запис в таблица Alerts през MySQL
     public void InsertAlert(string message)
     {
         try
@@ -170,11 +169,10 @@ public class DatabaseService
         }
         catch (MySqlException ex)
         {
-            Console.WriteLine($"[БД ГРЕШКА - LOG]: Неуспешен запис на лог: {ex.Message}");
+            Console.WriteLine($"[БД АЛЕРТ ГРЕШКА]: {ex.Message}");
         }
     }
 
-    // Помощен метод за изчистване на таблицата (за целите на теста)
     public void ClearDevicesTable()
     {
         try
@@ -188,7 +186,7 @@ public class DatabaseService
         }
         catch (MySqlException ex)
         {
-            Console.WriteLine($"[БД ГРЕШКА - LOG]: Неуспешен запис на лог: {ex.Message}");
+            Console.WriteLine($"[БД ЧИСТЕНЕ ГРЕШКА]: {ex.Message}");
         }
     }
 
